@@ -4,6 +4,7 @@ const { Restaurant,Menu } = require('./index');
 const app = express();
 const port = 3000;
 const {sequelize} = require('./db');
+const { check, validationResult } = require('express-validator');
 
 
 app.use(express.static('public'));
@@ -71,6 +72,45 @@ app.put('/restaurants/:id', async (req, res) => {
     })
     res.send("Updated!")
 })
+
+//Validations
+
+app.post('/restaurants', [
+  check('name').not().isEmpty().trim().escape()
+  ], async (req, res) => {
+  const errors = validationResult(req)
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() })}})
+
+
+app.post('/restaurants', [
+  check('name').not("Arby's")
+], async (req, res) => {
+  const errors = validationResult(req)
+  if (!errors.isEmpty()){
+    return res.status(400).json({errors: errors.array()})
+  }
+}) 
+
+app.post('/restaurants', [
+  check('image').isURL()
+], async (req, res) => {
+  const errors = validationResult(req)
+  if (!errors.isEmpty()){
+    return res.status(400).json({errors: errors.arrray()})
+  }
+})
+  
+app.post('/restaurants', [
+  check('name').isLength(0,50)
+], async (req, res) => {
+  const errors = validationResult(req)
+  if (!errors.isEmpty()){
+    return res.status(400).json({errors: errors.arrray()})
+  }
+})
+
+
 
 async function seed(){
   await sequelize.sync({ force: true })

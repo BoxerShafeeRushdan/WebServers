@@ -6,6 +6,7 @@ class Menu extends Model{}
 Restaurant.init({
     name: DataTypes.STRING,
     type: DataTypes.STRING,
+    image: DataTypes.STRING,
 }, {
     sequelize,
     timestamps: false,
