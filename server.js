@@ -9,6 +9,7 @@ const {sequelize} = require('./db');
 app.use(express.static('public'));
 
 
+
 app.get('/', async (req, res) => {
   res.send('<h1>Hello!</h1>')
 })
@@ -24,8 +25,15 @@ app.get('/menus', async (req, res) => {
   res.json({menus});
 })
 
+app.get('/restaurants/:id', async (req, res) => {
+  const restaurant = await Restaurant.findByPk(req.params.id)
+  res.json({restaurant})
+})
 
-
+app.get('/menus/:id', async (req, res) => {
+  const menu = await Menu.findByPk(req.params.id, {include: Restaurant})
+  res.json({menu})
+})
 
 async function seed(){
   await sequelize.sync({ force: true })
