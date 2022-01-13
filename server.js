@@ -7,7 +7,8 @@ const {sequelize} = require('./db');
 
 
 app.use(express.static('public'));
-
+app.use(express.urlencoded({ extended: true }))
+app.use(express.json());
 
 
 app.get('/', async (req, res) => {
@@ -35,11 +36,56 @@ app.get('/menus/:id', async (req, res) => {
   res.json({menu})
 })
 
+app.post('/menus', async (req, res) => {
+  const newMenu = await Menu.create(req.body);
+  res.send('Created!')
+})
+
+app.post('/restaurants', async (req, res) => {
+  const newRestaurant = await Restaurant.create(req.body);
+  res.send('Created!')
+})
+
+app.delete('/menus/:id', async (req, res) => {
+  await Menu.destroy({
+      where: {id: req.params.id}
+  })
+  res.send('Deleted!')
+})
+
+app.delete('/restaurants/:id', async (req, res) => {
+  const newRestaurant  = await Restaurant.create(req.body);
+  res.send('Deleted!')
+})
+
+app.put('/menus/:id', async (req, res) => {
+  await Menu.update(req.body, {
+      where: {id: req.params.id}
+  })
+  res.send("Updated!")
+})
+
+app.put('/restaurants/:id', async (req, res) => {
+    await Restaurant.update(req.body, {
+      where: {id: req.params.id}
+    })
+    res.send("Updated!")
+})
+
 async function seed(){
   await sequelize.sync({ force: true })
-  let fogo = await Restaurant.create({name : 'Fogo de Chao', type : 'Steakhouse'})
-  let Lunch = await Menu.create({course: 'Lunch Menu', item: 'Filet Mignon'})
-  await fogo.addMenu(Lunch)
+  let fogo = await Restaurant.create({name : 'Fogo de Chao', type : 'Brazillian Steakhouse'})
+  let lunch = await Menu.create({course: 'Lunch Menu', item: 'Filet Mignon'})
+  
+  let sequoia = await Restaurant.create({name: 'Sequoia', type: 'American Restaurant'})
+  let brunch = await Menu.create({course: 'Brunch Menu', item: 'Grilled Asparagus'})
+
+  let blueducktavern = await Restaurant.create({name: 'Blue Duck Tavern', type: 'New American Restaurant'})
+  let dinner = await Menu.create({course: 'Dinner Menu', item: 'Roasted Duck'})
+  
+  await fogo.addMenu(lunch)
+  await sequoia.addMenu(brunch)
+  await blueducktavern.addMenu(dinner)
 }
 console.log("db seeded!")
 
