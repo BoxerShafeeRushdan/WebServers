@@ -1,16 +1,38 @@
 
 const express = require('express');
-const { Restaurant,Menu } = require('./index');
+const { Restaurant,Menu } = require('./public/models/index');
 const app = express();
 const port = 3000;
 const {sequelize} = require('./db');
-const { check, validationResult } = require('express-validator');
+const { body, check, validationResult } = require('express-validator');
 
+const Handlebars = require('handlebars')
+const expressHandlebars = require('express-handlebars')
+const {allowInsecurePrototypeAccess} = require('@handlebars/allow-prototype-access')
 
 app.use(express.static('public'));
 app.use(express.urlencoded({ extended: true }))
 app.use(express.json());
 
+const handlebars = expressHandlebars({
+  handlebars: allowInsecurePrototypeAccess(Handlebars)
+})
+app.engine('handlebars', handlebars)
+app.set('view engine', 'handlebars')
+
+
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(express.static('public'));
+
+
+
+
+
+app.listen(port, async () => {
+  console.log(`Server is listening at http://localhost:${port}`)
+  await seed()
+})
 
 app.get('/', async (req, res) => {
   res.send('<h1>Hello!</h1>')
@@ -19,22 +41,21 @@ app.get('/', async (req, res) => {
 
 app.get('/restaurants', async (req, res) => {
   const restaurants = await Restaurant.findAll();
-  res.json({restaurants});
+  res.render('restaurants',{restaurants});
 })
 
 app.get('/menus', async (req, res) => {
   const menus = await Menu.findAll();
-  res.json({menus});
+  res.render('menus',{menus});
 })
 
 app.get('/restaurants/:id', async (req, res) => {
   const restaurant = await Restaurant.findByPk(req.params.id)
-  res.json({restaurant})
-})
+  res.render('restaurant',{restaurant});})
 
 app.get('/menus/:id', async (req, res) => {
   const menu = await Menu.findByPk(req.params.id, {include: Restaurant})
-  res.json({menu})
+  res.render('menus',{menu});
 })
 
 app.post('/menus', async (req, res) => {
@@ -73,7 +94,28 @@ app.put('/restaurants/:id', async (req, res) => {
     res.send("Updated!")
 })
 
-//Validations
+///////////////////////////////////////////////////////Validations
+
+app.post('/newrestaurant',
+body('name').isLength({max: 50}),
+body('type'),
+body('image'), 
+(req,res) => {
+
+const errors = validationResult(req)
+
+if(!errors.isEmpty()){
+  res.send('INVALID')
+  }else{
+    const newRestaurant = {
+      name: req.body.username,
+      type: req.body.type,
+      image: req.body.image
+    }
+  }
+})
+
+
 
 app.post('/restaurants', [
   check('name').not().isEmpty().trim().escape()
@@ -109,7 +151,7 @@ app.post('/restaurants', [
     return res.status(400).json({errors: errors.arrray()})
   }
 })
-
+///////////////////////////////////////////////////////Validations
 
 
 async function seed(){
@@ -131,10 +173,6 @@ console.log("db seeded!")
 
 
 
-app.listen(port, async () => {
-  console.log(`Server is listening at http://localhost:${port}`)
-  await seed()
-})
 
 
 
